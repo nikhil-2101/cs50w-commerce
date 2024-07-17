@@ -1,0 +1,85 @@
+{% extends 'auctions/layout.html' %}
+
+{% block body %}
+  {% if listing.is_closed %}
+    <div class="alert alert-info" role="alert">
+      This listing is no longer available!
+    </div>
+    {% if listing.winner %}
+      <p><strong>Winner:</strong> {{ listing.winner }}</p>
+    {% endif %}
+  {% endif %}
+  <h1>Listing: {{ listing.item_name }}</h1>
+  
+  <div class="m-2">
+    <form action="{% if is_in_watchlist %}{% url 'remove_from_watchlist' listing.id %}{% else %}{% url 'add_to_watchlist' listing.id %}{% endif %}" method="POST">
+      {% csrf_token %}
+      <button type="submit" name="button" value="Watchlist" class="btn btn-secondary btn-sm">
+        {% if is_in_watchlist %}
+          Remove from Watchlist
+        {% else %}
+          Add to Watchlist
+        {% endif %}
+      </button>
+    </form>
+  </div>
+
+  <div>
+    <img src="{{ listing.image.url }}" alt="image" style="width: 400px; height: auto">
+  </div>
+
+  <div>
+    <h2>Starting Price: ${{ listing.starting_price }}</h2>
+    {% if listing.current_bid %}
+      <h2>Current Highest Bid: ${{ listing.current_bid }}</h2>
+    {% endif %}
+    <p>{{ message }}</p>
+    <p><strong>Description:</strong> {{ listing.item_description }}</p>
+    <form action="{% url 'place_bid' listing.id %}" method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="bid">{{ bid_count }} bid(s) so far.</label>
+            <input type="number" name="bid_amount" id="bid_amount" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <input type="submit" name="button" class="btn btn-primary" value="Place Bid">
+        </div>
+    </form>
+  </div>
+
+  {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+  {% endif %}
+  
+  <div>
+    <h4>Listing Details</h4>
+    <ul>
+        <li>Listed by: {{ listing.seller }}</li>
+        <li>Category: {{ listing.get_item_category_display }}</li>
+    </ul>
+    {% if not listing.is_closed and user == listing.seller %}
+      <form action="{% url 'close_bid' listing.id %}" method="POST">
+        {% csrf_token %}
+        <button type="submit" name="button" class="btn btn-danger" value="Close">Close Auction</button>
+      </form>
+    {% endif %}
+  </div>
+
+  <div>
+    <h4>Comments</h4>
+    <a href="{% url 'add_comment' listing.id %}"><span class="badge badge-primary">Add a Comment!</span></a>
+
+    {% for comment in listing.comment_listings.all %}
+      <div class="container m3-5 p-2 border">
+        <p><strong>{{ comment.comment_title }}</strong></p>
+        <p class="mt-n2">{{ comment.comment_body }}</p>
+        <p class="mt-n3"><small>{{ comment.comment_time }}</small></p>
+      </div>
+    {% endfor %}
+  </div>
+
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'auctions/layout.html' %}
+
+{% block body %}
+  <h1>{{ category }}</h1>
+
+  {% if listings.count == 0 %}
+    <p>There are no listings in this category</p>
+  {% else %}
+    <div class="row">
+      {% for listing in listings %}
+        <div class="col-md-4 mb-4">
+          <div class="card">
+            <img src="{{ listing.image.url }}" class="card-img-top" alt="...">
+            <div class="card-body">
+              <h5 class="card-title">{{ listing.item_name }}</h5>
+              <p class="card-text">Price: ${{ listing.starting_price }}</p>
+              <p class="card-text"><small class="text-muted">{{ listing.created_at }}</small></p>
+              <a href="{% url 'listing' listing.id %}" class="btn btn-primary">Go To Listing</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}
